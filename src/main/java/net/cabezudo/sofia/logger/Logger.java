@@ -15,15 +15,15 @@ public class Logger {
 
   private static Level level = Level.INFO;
 
+  private Logger() {
+    // Nothing to do here
+  }
+
   public static void log(Level level, String message, Object... parameters) {
     log(level, null, null, message, parameters);
   }
 
   public static void log(Level level, String clazz, String method, String message, Object... parameters) {
-    System.out.println("*****");
-    System.out.println(Logger.level);
-    System.out.println(level);
-    System.out.println(Logger.level.compareTo(level) > 0);
     if (Logger.level.compareTo(level) > 0) {
       return;
     }
