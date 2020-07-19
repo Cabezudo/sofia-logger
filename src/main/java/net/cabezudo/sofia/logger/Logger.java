@@ -2,7 +2,6 @@ package net.cabezudo.sofia.logger;
 
 import java.sql.PreparedStatement;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -11,7 +10,7 @@ import java.util.Date;
  */
 public class Logger {
 
-  private static final DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
+  private static final DateFormat sdf = DateFormat.getDateTimeInstance();
 
   private static Level level = Level.INFO;
 
@@ -24,7 +23,7 @@ public class Logger {
   }
 
   public static void log(Level level, String clazz, String method, String message, Object... parameters) {
-    if (Logger.level.compareTo(level) > 0) {
+    if (Logger.level.ordinal() > level.ordinal()) {
       return;
     }
     Date date = new Date();
