@@ -35,7 +35,9 @@ public class Logger {
     } else {
       fullMessage = sdf.format(date) + " [" + metadata + "] " + String.format(message, parameters);
     }
-    System.out.println(fullMessage);
+    if (System.console() != null) {
+      System.out.println(fullMessage);
+    }
   }
 
   public static void log(Level level, Throwable cause) {
