@@ -5,6 +5,7 @@ package net.cabezudo.sofia.logger;
  * @version 0.01.00, 2019.05.24
  */
 public enum Level {
+  ALL,
   FINEST,
   FINE,
   DEBUG,

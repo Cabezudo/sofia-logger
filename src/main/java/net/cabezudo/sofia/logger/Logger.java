@@ -12,22 +12,23 @@ public class Logger {
 
   private static final DateFormat sdf = DateFormat.getDateTimeInstance();
 
-  private static Level level = Level.INFO;
+  private static Level actualLevel = Level.SEVERE;
 
   private Logger() {
     // Nothing to do here
   }
 
-  public static void log(Level level, String message, Object... parameters) {
-    log(level, null, null, message, parameters);
-  }
-
-  public static void log(Level level, String clazz, String method, String message, Object... parameters) {
-    if (Logger.level.ordinal() > level.ordinal()) {
+  private static void log(Level messageLevel, Thread currentThread, String message, Object... parameters) {
+    if (messageLevel.ordinal() < Logger.actualLevel.ordinal()) {
       return;
     }
     Date date = new Date();
-    String metadata = level + (clazz == null ? "" : ":" + clazz) + (method == null ? "" : ":" + method);
+    StackTraceElement[] stacktrace = currentThread.getStackTrace();
+    StackTraceElement ste = stacktrace[3];
+    String className = ste.getClassName();
+    String methodName = ste.getMethodName();
+    int lineNumber = ste.getLineNumber();
+    String metadata = className + ":" + methodName + ":" + lineNumber;
 
     String fullMessage;
     if (parameters.length == 0) {
@@ -35,51 +36,41 @@ public class Logger {
     } else {
       fullMessage = sdf.format(date) + " [" + metadata + "] " + String.format(message, parameters);
     }
-    if (System.console() != null) {
-      System.out.println(fullMessage);
-    }
+    System.out.println(fullMessage);
   }
 
   public static void log(Level level, Throwable cause) {
-    if (Logger.level.compareTo(level) > 0) {
+    if (Logger.actualLevel.compareTo(level) > 0) {
       return;
     }
     cause.printStackTrace();
   }
 
   public static void finest(String message, Object... parameters) {
-    log(Level.FINEST, message, parameters);
+    log(Level.FINEST, Thread.currentThread(), message, parameters);
   }
 
   public static void fine(String message, Object... parameters) {
-    fine(null, null, message, parameters);
-  }
-
-  public static void fine(String clazz, String method, String message, Object... parameters) {
-    log(Level.FINE, clazz, method, message, parameters);
-  }
-
-  public static void fine(PreparedStatement ps) {
-    fine(null, null, ps);
-  }
-
-  public static void fine(String clazz, String method, PreparedStatement ps) {
-    String psString = ps.toString();
-    int i = psString.indexOf(": ");
-    String message = psString.substring(i + 2);
-    fine(clazz, method, message);
+    log(Level.FINE, Thread.currentThread(), message, parameters);
   }
 
   public static void debug(String message, Object... parameters) {
-    log(Level.DEBUG, message, parameters);
+    log(Level.DEBUG, Thread.currentThread(), message, parameters);
+  }
+
+  public static void debug(PreparedStatement ps) {
+    String psString = ps.toString();
+    int i = psString.indexOf(": ");
+    String message = psString.substring(i + 2);
+    log(Level.DEBUG, Thread.currentThread(), message);
   }
 
   public static void info(String message, Object... parameters) {
-    log(Level.INFO, message, parameters);
+    log(Level.INFO, Thread.currentThread(), message, parameters);
   }
 
   public static void warning(String message, Object... parameters) {
-    log(Level.WARNING, message, parameters);
+    log(Level.WARNING, Thread.currentThread(), message, parameters);
   }
 
   public static void warning(Throwable e) {
@@ -91,16 +82,31 @@ public class Logger {
   }
 
   public static void severe(String message, Object... parameters) {
-    log(Level.SEVERE, message, parameters);
+    log(Level.SEVERE, Thread.currentThread(), message, parameters);
   }
 
   public static void severe(String message) {
-    log(Level.SEVERE, message);
+    log(Level.SEVERE, Thread.currentThread(), message);
+  }
+
+  public static void all(String message) {
+    log(Level.ALL, Thread.currentThread(), message);
+  }
+
+  public static void all(String message, Object... parameters) {
+    log(Level.ALL, Thread.currentThread(), message, parameters);
   }
 
   public static void setLevel(Level level) {
-    info("Set level to " + level + ".");
-    Logger.level = level;
+    if (actualLevel == level) {
+      all("Level already on " + level + ".");
+    } else {
+      all("Set level to " + level + ".");
+    }
+    Logger.actualLevel = level;
   }
 
+  public static Level getLevel() {
+    return Logger.actualLevel;
+  }
 }
